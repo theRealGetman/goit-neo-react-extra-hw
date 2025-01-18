@@ -3,14 +3,15 @@ import css from "./ContactForm.module.css";
 import { useId } from "react";
 import * as Yup from "yup";
 import { useDispatch } from "react-redux";
-import { addContact } from "../../redux/contactsOps";
+import { addContact } from "../../redux/contacts/operations";
+import toast from "react-hot-toast";
 
 const initialValues = {
   name: "",
   number: "",
 };
 
-const FeedbackSchema = Yup.object().shape({
+const ContactSchema = Yup.object().shape({
   name: Yup.string()
     .min(3, "Too Short!")
     .max(50, "Too Long!")
@@ -21,22 +22,27 @@ const FeedbackSchema = Yup.object().shape({
     .required("Required"),
 });
 
-const FeedbackForm = () => {
+const ContactForm = () => {
   const dispatch = useDispatch();
 
   const nameId = useId();
   const phoneId = useId();
 
   const handleSubmit = (values, actions) => {
-    dispatch(addContact(values));
-    actions.resetForm();
+    dispatch(addContact(values))
+      .unwrap()
+      .then(() => {
+        actions.resetForm();
+        toast.success("Contact added");
+      })
+      .catch(() => toast.error("Add contact failed"));
   };
 
   return (
     <Formik
       initialValues={initialValues}
       onSubmit={handleSubmit}
-      validationSchema={FeedbackSchema}
+      validationSchema={ContactSchema}
     >
       <Form className={css.form}>
         <label htmlFor={nameId}>Username</label>
@@ -53,4 +59,4 @@ const FeedbackForm = () => {
   );
 };
 
-export default FeedbackForm;
+export default ContactForm;
